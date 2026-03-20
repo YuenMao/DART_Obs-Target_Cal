@@ -2,7 +2,7 @@
 
 **DART Obs-Target-Cal** — An online tool for computing observable targets and observation windows for the Daocheng Radio Telescope (DART).
 
-🔗 **[Open the Tool](https://Yuanao.github.io/DART_Obs-Target_Cal)**
+🔗 **[Open the Tool](https://YuenMao.github.io/DART_Obs-Target_Cal)**
 
 ---
 

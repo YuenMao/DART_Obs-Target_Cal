@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -120,68 +120,37 @@ canvas.galmap{width:100%;height:auto;display:block;cursor:crosshair;border-radiu
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--purple));border-radius:99px;transition:width .2s;width:0%;}
 footer{text-align:center;margin-top:2rem;font-size:.68rem;color:var(--text3);font-family:var(--mono);line-height:2;}
 
-/* ── header orb: solar system ── */
 .header-orb{width:80px;height:80px;flex-shrink:0;background:transparent !important;
   box-shadow:none !important;display:flex;align-items:center;justify-content:center;border-radius:0 !important;}
 .ss-wrap{position:relative;width:80px;height:80px;}
-/* Sun: absolutely centered */
-.ss-sun{
-  position:absolute;
-  width:14px;height:14px;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
+.ss-sun{position:absolute;width:14px;height:14px;top:50%;left:50%;
+  transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle at 38% 35%,#fef08a,#f59e0b 55%,#b45309);
   box-shadow:0 0 10px rgba(251,191,36,0.9),0 0 22px rgba(251,191,36,0.4);
-  animation:ss-sun-pulse 3s ease-in-out infinite;
-  z-index:5;
-}
+  animation:ss-sun-pulse 3s ease-in-out infinite;z-index:5;}
 @keyframes ss-sun-pulse{
   0%,100%{box-shadow:0 0 10px rgba(251,191,36,0.9),0 0 22px rgba(251,191,36,0.4);}
-  50%{box-shadow:0 0 14px rgba(251,191,36,1),0 0 32px rgba(251,191,36,0.6);}
-}
-/* Orbit rings — decorative circles centered on sun */
-.ss-orbit-ring{
-  position:absolute;
-  width:calc(var(--r)*2);height:calc(var(--r)*2);
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  border:0.5px solid rgba(148,163,184,0.2);
-  pointer-events:none;
-}
-/* Orbit track: centered square that rotates; planet at top edge */
-.ss-orbit-track{
-  position:absolute;
-  width:calc(var(--r)*2);height:calc(var(--r)*2);
-  top:50%;left:50%;
-  transform:translate(-50%,-50%) rotate(var(--start,0deg));
-  border-radius:50%;
-  animation:ss-orbit linear infinite;
-  animation-duration:var(--dur,8s);
-}
+  50%{box-shadow:0 0 14px rgba(251,191,36,1),0 0 32px rgba(251,191,36,0.6);}}
+.ss-orbit-ring{position:absolute;width:calc(var(--r)*2);height:calc(var(--r)*2);
+  top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;
+  border:0.5px solid rgba(148,163,184,0.2);pointer-events:none;}
+.ss-orbit-track{position:absolute;width:calc(var(--r)*2);height:calc(var(--r)*2);
+  top:50%;left:50%;transform:translate(-50%,-50%) rotate(var(--start,0deg));
+  border-radius:50%;animation:ss-orbit linear infinite;animation-duration:var(--dur,8s);}
 @keyframes ss-orbit{
   from{transform:translate(-50%,-50%) rotate(var(--start,0deg));}
-  to{transform:translate(-50%,-50%) rotate(calc(var(--start,0deg) + 360deg));}
-}
-/* Planet dot: sits at the top of the orbit circle */
-.ss-dot{
-  position:absolute;
-  width:var(--size,4px);height:var(--size,4px);
-  top:0;left:50%;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  background:var(--color,#fff);
-  box-shadow:0 0 4px var(--color,#fff);
-}
-/* Logo */
+  to{transform:translate(-50%,-50%) rotate(calc(var(--start,0deg) + 360deg));}}
+.ss-dot{position:absolute;width:var(--size,4px);height:var(--size,4px);
+  top:0;left:50%;transform:translate(-50%,-50%);border-radius:50%;
+  background:var(--color,#fff);box-shadow:0 0 4px var(--color,#fff);}
 .dart-logo-wrap{display:flex;align-items:center;margin-left:auto;}
 .dart-logo-img{height:62px;width:auto;max-width:136px;filter:invert(1) brightness(2);
   opacity:0.78;mix-blend-mode:screen;}
-/* Footer: only bottom two lines */
 footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid var(--border);margin-top:1rem;}
 .footer-bottom{font-family:var(--mono);font-size:.62rem;color:var(--text3);
   text-align:center;letter-spacing:.05em;line-height:2;}
+.window-hint{display:inline-block;background:rgba(96,165,250,0.1);border:0.5px solid rgba(96,165,250,0.25);
+  border-radius:6px;padding:2px 8px;font-size:.68rem;color:var(--acc2);font-family:var(--mono);margin-left:8px;}
 </style>
 </head>
 <body>
@@ -414,6 +383,45 @@ function computeWindow(ra,dec,y,m,d){
   return{rise:riseT,riseAlt:rA,transit:maxT,transitAlt:maxA,set:setT,setAlt:sA,dur:setT-riseT};
 }
 
+// Full 24h scan for free-target mode — gives true BJT rise/transit/set
+function computeWindow24(ra,dec,y,m,d){
+  const STEP=0.05;
+  let maxA=-999,maxT=null;
+  let riseT=null,setT=null,rA=null,sA=null,inW=false;
+  let belowCount=0;
+  // Scan 0-24h
+  for(let bh=0;bh<24;bh+=STEP){
+    const a=getAlt(ra,dec,bh,y,m,d);
+    if(a<DART.minAlt) belowCount++;
+    if(a>=DART.minAlt){
+      if(!inW){riseT=bh;rA=a;inW=true;}
+      if(a>maxA){maxA=a;maxT=bh;}
+      setT=bh;sA=a;
+    } else inW=false;
+  }
+  // Never visible
+  if(maxA<DART.minAlt) return null;
+  // Always visible (circumpolar): belowCount==0
+  if(belowCount===0){
+    return{rise:null,riseAlt:null,transit:maxT,transitAlt:maxA,
+           set:null,setAlt:null,dur:24,alwaysVis:true};
+  }
+  // Handle wrap-around: visible at end of 0-24 scan → set time crosses midnight
+  if(riseT!==null && setT!==null){
+    // If still visible at bh=23.95, the set time is actually past 24h
+    const aEnd=getAlt(ra,dec,23.95,y,m,d);
+    if(aEnd>=DART.minAlt){
+      for(let bh=24;bh<48;bh+=STEP){
+        const a=getAlt(ra,dec,bh,y,m,d);
+        if(a>=DART.minAlt){if(a>maxA){maxA=a;maxT=bh%24;}setT=bh;sA=a;}
+        else break;
+      }
+    }
+  }
+  return{rise:riseT,riseAlt:rA,transit:maxT%24,transitAlt:maxA,
+         set:setT%24,setAlt:sA,dur:Math.min(setT-riseT,24),alwaysVis:false};
+}
+
 // ── PARSERS ──
 function parseRA(s){
   s=s.trim();
@@ -443,19 +451,46 @@ function calcFree(){
   if(isNaN(ra)||isNaN(dec)){el.innerHTML='<div class="msg-box msg-err">坐标格式无法识别，请检查输入</div>';return;}
   if(dec<-90||dec>90){el.innerHTML='<div class="msg-box msg-err">Dec 超出范围 ±90°</div>';return;}
   const{y,m,d}=parseDate(document.getElementById('f-date').value);
-  const w=computeWindow(ra,dec,y,m,d);
-  if(!w){el.innerHTML=`<div class="msg-box msg-warn">⚠ 该目标在观测窗口（BJT 18:00–次日08:00）内从未超过最低仰角 ${DART.minAlt}°，无法观测。</div>`;return;}
+  const w=computeWindow24(ra,dec,y,m,d);
+  if(!w){el.innerHTML=`<div class="msg-box msg-warn">⚠ 该目标全天仰角均低于最低观测仰角 ${DART.minAlt}°，DART 无法观测。</div>`;return;}
+  // Window hint: is transit within 18:00-08:00 BJT?
+  const tH=w.alwaysVis?w.transit:(w.transit<0?w.transit+24:w.transit);
+  const inWindow=(tH>=18||tH<8);
+  const winHint=inWindow
+    ?'<span class="window-hint">✓ 中天在推荐窗口内（18:00–08:00）</span>'
+    :'<span class="window-hint" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.3);color:#fbbf24;">⚠ 中天在白天，请关注升/落时间</span>';
+  // Rise / set display
+  const riseDisp=w.alwaysVis?'全天可见':(fmtBJT(w.rise)+' BJT');
+  const setDisp =w.alwaysVis?'全天可见':(fmtBJT(w.set)+' BJT');
+  const riseAlt =w.alwaysVis?'（始终可见）':`仰角 ${w.riseAlt.toFixed(1)}°`;
+  const setAlt  =w.alwaysVis?'（始终可见）':`仰角 ${w.setAlt.toFixed(1)}°`;
+  const durDisp =w.alwaysVis?'全天（>24 h）':`${w.dur.toFixed(2)} h`;
   el.innerHTML=`
   <div class="target-info">
     <span class="ti-label">目标坐标 </span><span class="ti-val">RA ${raToStr(ra)} / Dec ${decToStr(dec)}</span>
-    &nbsp;&nbsp; <span class="ti-label">观测日期 </span><span class="ti-val">${document.getElementById('f-date').value||getToday()}</span>
-    &nbsp;&nbsp; <span class="ti-label">可见时长 </span><span class="ti-val">${w.dur.toFixed(2)} h</span>
-    &nbsp;&nbsp; <span class="ti-label">观测质量 </span>${quality(w.transitAlt)}
+    &nbsp;&nbsp;<span class="ti-label">观测日期 </span><span class="ti-val">${document.getElementById('f-date').value||getToday()}</span>
+    &nbsp;&nbsp;<span class="ti-label">可见时长 </span><span class="ti-val">${durDisp}</span>
+    &nbsp;&nbsp;<span class="ti-label">观测质量 </span>${quality(w.transitAlt)}${winHint}
   </div>
   <div class="result-grid">
-    <div class="rcard"><div class="rc-label">升起时间</div><div class="rc-time">${fmtBJT(w.rise)}</div><div class="rc-alt">仰角 ${w.riseAlt.toFixed(1)}°</div></div>
-    <div class="rcard highlight"><div class="rc-label">过中天（最佳时机）</div><div class="rc-time">${fmtBJT(w.transit)}</div><div class="rc-alt">最大仰角 <strong>${w.transitAlt.toFixed(1)}°</strong></div></div>
-    <div class="rcard"><div class="rc-label">落下时间</div><div class="rc-time">${fmtBJT(w.set)}</div><div class="rc-alt">仰角 ${w.setAlt.toFixed(1)}°</div></div>
+    <div class="rcard">
+      <div class="rc-label">升起时间（BJT）</div>
+      <div class="rc-time">${riseDisp}</div>
+      <div class="rc-alt">${riseAlt}</div>
+    </div>
+    <div class="rcard highlight">
+      <div class="rc-label">过中天 · 最佳时机（BJT）</div>
+      <div class="rc-time">${fmtBJT(w.transit)} BJT</div>
+      <div class="rc-alt">最大仰角 <strong>${w.transitAlt.toFixed(1)}°</strong></div>
+    </div>
+    <div class="rcard">
+      <div class="rc-label">落下时间（BJT）</div>
+      <div class="rc-time">${setDisp}</div>
+      <div class="rc-alt">${setAlt}</div>
+    </div>
+  </div>
+  <div style="margin-top:.55rem;font-family:var(--mono);font-size:.63rem;color:var(--text3);">
+    推荐观测窗口：北京时间 18:00 → 次日 08:00 &nbsp;·&nbsp; 所有时间均为北京时间（BJT = UTC+8）
   </div>`;
 }
 function clearFree(){document.getElementById('f-ra').value='';document.getElementById('f-dec').value='';document.getElementById('free-result').innerHTML='';}
@@ -569,14 +604,8 @@ function calcGalaxy(){
       const gi=idx%NGL,bi=Math.floor(idx/NGL);
       const{ra,dec}=galToEq(glArr[gi],gbArr[bi]);
       let maxA=-Infinity,maxT=NaN;
-      for(let bh=0;bh<24;bh+=0.1){
-        const a=getAlt(ra,dec,bh,y,m,d);
-        if(a>maxA){maxA=a;maxT=bh;}
-      }
-      if(maxA>=DART.minAlt){
-        tMap[bi*NGL+gi]=maxT;
-        aMap[bi*NGL+gi]=maxA;
-      }
+      for(let bh=0;bh<24;bh+=0.1){const a=getAlt(ra,dec,bh,y,m,d);if(a>maxA){maxA=a;maxT=bh;}}
+      if(maxA>=DART.minAlt){tMap[bi*NGL+gi]=maxT;aMap[bi*NGL+gi]=maxA;}
       done++;
     }
     const pct=done/total*100;
@@ -639,7 +668,7 @@ function setupHover(cv,ttId,type){
     const val=type==='time'?tMap[bi*NGL+gi]:aMap[bi*NGL+gi];
     const gl=glArr[gi].toFixed(1),gb=gbArr[bi].toFixed(1);
     const{ra,dec}=galToEq(parseFloat(gl),parseFloat(gb));
-    const valStr=isNaN(val)||val<=0?'不可见':type==='time'?(isNaN(val)?'不可观测':fmt(val)+' BJT'):(isNaN(val)?'不可观测 (仰角<15°)':val.toFixed(1)+'°');
+    const valStr=isNaN(val)||val<=0?'不可见':type==='time'?(isNaN(val)?'不可观测':fmt(val)+' BJT'):(isNaN(val)?'不可观测':val.toFixed(1)+'°');
     tt.innerHTML=`Gl = ${gl}°  Gb = ${gb}°<br>RA = ${raToStr(ra)}  Dec = ${decToStr(dec)}<br>${type==='time'?'中天时间':'中天仰角'}: ${valStr}`;
     tt.style.display='block';
     let lx=e.clientX-r.left+14,ly=e.clientY-r.top-58;

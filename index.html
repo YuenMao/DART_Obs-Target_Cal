@@ -151,6 +151,19 @@ footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid 
   text-align:center;letter-spacing:.05em;line-height:2;}
 .window-hint{display:inline-block;background:rgba(96,165,250,0.1);border:0.5px solid rgba(96,165,250,0.25);
   border-radius:6px;padding:2px 8px;font-size:.68rem;color:var(--acc2);font-family:var(--mono);margin-left:8px;}
+
+.header-orb{width:80px;height:80px;flex-shrink:0;background:transparent !important;box-shadow:none !important;display:flex;align-items:center;justify-content:center;border-radius:0 !important;}
+.ss-wrap{position:relative;width:80px;height:80px;}
+.ss-sun{position:absolute;width:14px;height:14px;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 38% 35%,#fef08a,#f59e0b 55%,#b45309);box-shadow:0 0 10px rgba(251,191,36,0.9),0 0 22px rgba(251,191,36,0.4);animation:ss-sun-pulse 3s ease-in-out infinite;z-index:5;}
+@keyframes ss-sun-pulse{0%,100%{box-shadow:0 0 10px rgba(251,191,36,.9),0 0 22px rgba(251,191,36,.4);}50%{box-shadow:0 0 14px rgba(251,191,36,1),0 0 32px rgba(251,191,36,.6);}}
+.ss-orbit-ring{position:absolute;width:calc(var(--r)*2);height:calc(var(--r)*2);top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;border:0.5px solid rgba(148,163,184,0.2);pointer-events:none;}
+.ss-orbit-track{position:absolute;width:calc(var(--r)*2);height:calc(var(--r)*2);top:50%;left:50%;transform:translate(-50%,-50%) rotate(var(--start,0deg));border-radius:50%;animation:ss-orbit linear infinite;animation-duration:var(--dur,8s);}
+@keyframes ss-orbit{from{transform:translate(-50%,-50%) rotate(var(--start,0deg));}to{transform:translate(-50%,-50%) rotate(calc(var(--start,0deg) + 360deg));}}
+.ss-dot{position:absolute;width:var(--size,4px);height:var(--size,4px);top:0;left:50%;transform:translate(-50%,-50%);border-radius:50%;background:var(--color,#fff);box-shadow:0 0 4px var(--color,#fff);}
+.dart-logo-wrap{display:flex;align-items:center;margin-left:auto;}
+.dart-logo-img{height:62px;width:auto;max-width:136px;filter:invert(1) brightness(2);opacity:0.78;mix-blend-mode:screen;}
+footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid var(--border);margin-top:1rem;}
+.footer-bottom{font-family:var(--mono);font-size:.62rem;color:var(--text3);text-align:center;letter-spacing:.05em;line-height:2;}
 </style>
 </head>
 <body>
@@ -188,12 +201,14 @@ footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid 
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab(0)" id="tab0"><span class="tab-icon">✦</span><span class="tab-label">自由观测</span></button>
-  <button class="tab" onclick="switchTab(1)" id="tab1"><span class="tab-icon">⊛</span><span class="tab-label">球状星团</span></button>
-  <button class="tab" onclick="switchTab(2)" id="tab2"><span class="tab-icon">◎</span><span class="tab-label">超新星遗迹</span></button>
-  <button class="tab" onclick="switchTab(3)" id="tab3"><span class="tab-icon">⟡</span><span class="tab-label">银盘巡天</span></button>
+  <button class="tab" onclick="switchTab(1)" id="tab1"><span class="tab-icon" style="display:inline-flex;align-items:center;vertical-align:middle;"><svg width="22" height="10" viewBox="0 0 22 10" xmlns="http://www.w3.org/2000/svg" style="display:block"><ellipse cx="11" cy="5" rx="10.5" ry="4" fill="#94a3b8"/></svg></span><span class="tab-label">银盘巡天</span></button>
+  <button class="tab" onclick="switchTab(2)" id="tab2"><span class="tab-icon">✧</span><span class="tab-label">3C 定标源</span></button>
+  <button class="tab" onclick="switchTab(3)" id="tab3"><span class="tab-icon">◎</span><span class="tab-label">超新星遗迹</span></button>
+  <button class="tab" onclick="switchTab(4)" id="tab4"><span class="tab-icon">⊛</span><span class="tab-label">球状星团</span></button>
 </div>
 
-<!-- MODE 0 -->
+
+
 <div class="mode-panel active" id="panel0">
   <div class="card">
     <div class="card-title">// 目标坐标输入</div>
@@ -221,8 +236,82 @@ footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid 
   <div id="free-result"></div>
 </div>
 
-<!-- MODE 1 -->
 <div class="mode-panel" id="panel1">
+  <div class="card">
+    <div class="card-title">// 银盘巡天参数</div>
+    <div class="fg4">
+      <div class="field"><label>观测日期（留空=今天）</label><input type="date" id="gp-date"></div>
+      <div class="field"><label>银纬下限 Gb_min (°)</label><input type="number" id="gp-gbmin" value="-15" step="5" min="-90" max="0"></div>
+      <div class="field"><label>银纬上限 Gb_max (°)</label><input type="number" id="gp-gbmax" value="15" step="5" min="0" max="90"></div>
+      <div class="field"><label>分辨率步长 (°)</label><input type="number" id="gp-step" value="0.5" step="0.1" min="0.2" max="2"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="gp-btn" onclick="calcGalaxy()">▶ 生成银盘图</button>
+    </div>
+    <div class="prog-bar" id="gp-prog-bar" style="display:none"><div class="prog-fill" id="gp-prog"></div></div>
+    <div id="gp-status" style="font-family:var(--mono);font-size:.7rem;color:var(--text3);margin-top:.4rem;min-height:1.2em;"></div>
+  </div>
+  <div class="map-section" id="gp-maps" style="display:none">
+    <div class="map-card">
+      <div class="map-header"><span class="map-title">// 中天时间 MAP (BJT)</span><span style="font-family:var(--mono);font-size:.63rem;color:var(--text3);">悬停查看数值</span></div>
+      <div class="map-body"><canvas class="galmap" id="map-time" width="600" height="250"></canvas><div class="map-tooltip" id="tt-time"></div></div>
+      <div class="cbar-wrap"><span class="cbar-label">18:00</span><canvas class="cbar-canvas" id="cbar-time" width="400" height="12"></canvas><span class="cbar-label">08:00+1</span></div>
+      <div class="cbar-ticks" id="cbar-time-ticks"></div>
+    </div>
+    <div class="map-card">
+      <div class="map-header"><span class="map-title">// 中天仰角 MAP (°)</span><span style="font-family:var(--mono);font-size:.63rem;color:var(--text3);">悬停查看数值</span></div>
+      <div class="map-body"><canvas class="galmap" id="map-alt" width="600" height="250"></canvas><div class="map-tooltip" id="tt-alt"></div></div>
+      <div class="cbar-wrap"><span class="cbar-label">0°</span><canvas class="cbar-canvas" id="cbar-alt" width="400" height="12"></canvas><span class="cbar-label">90°</span></div>
+      <div class="cbar-ticks" id="cbar-alt-ticks"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mode-panel" id="panel2">
+  <div class="card">
+    <div class="card-title">// 3C 定标源观测参数</div>
+    <div class="fg3">
+      <div class="field"><label>观测日期（留空=今天）</label><input type="date" id="cal-date"></div>
+      <div class="field"><label>Dec 下限 (°)</label><input type="number" id="cal-declim" value="-30" step="5" min="-90" max="90"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="calcCatalog('cal')">▶ 计算可见定标源</button>
+      <button class="btn" onclick="exportCSV('cal')">↓ 导出 CSV</button>
+    </div>
+  </div>
+  <div class="stats-bar" id="cal-stats" style="display:none">
+    <div class="scard"><div class="sl">可见目标</div><div class="sv" id="cal-s1">—</div></div>
+    <div class="scard"><div class="sl">最佳目标</div><div class="sv sm" id="cal-s2">—</div></div>
+    <div class="scard"><div class="sl">最大仰角</div><div class="sv" id="cal-s3">—</div></div>
+    <div class="scard"><div class="sl">最长可见</div><div class="sv" id="cal-s4">—</div></div>
+  </div>
+  <div class="tbl-outer">
+    <div class="tbl-toolbar">
+      <div class="search-wrap"><span class="si">⌕</span><input type="text" id="cal-search" placeholder="搜索..." oninput="renderCatalog('cal')"></div>
+      <div class="tbl-right" id="cal-count"></div>
+    </div>
+    <div class="tbl-scroll"><table><thead><tr>
+      <th onclick="sortCat('cal','name')">名称<span id="cal-si-name"></span></th>
+      <th onclick="sortCat('cal','ra')">RA<span id="cal-si-ra"></span></th>
+      <th onclick="sortCat('cal','dec')">Dec<span id="cal-si-dec"></span></th>
+      <th onclick="sortCat('cal','flux')">流量 Jy@150MHz<span id="cal-si-flux"></span></th>
+      <th onclick="sortCat('cal','type')">类型<span id="cal-si-type"></span></th>
+      <th onclick="sortCat('cal','rise')">升起 BJT<span id="cal-si-rise"></span></th>
+      <th onclick="sortCat('cal','riseAlt')">升起仰角<span id="cal-si-riseAlt"></span></th>
+      <th onclick="sortCat('cal','transit')">中天 BJT<span id="cal-si-transit"></span></th>
+      <th onclick="sortCat('cal','transitAlt')">中天仰角<span id="cal-si-transitAlt"></span></th>
+      <th onclick="sortCat('cal','set')">落下 BJT<span id="cal-si-set"></span></th>
+      <th onclick="sortCat('cal','setAlt')">落下仰角<span id="cal-si-setAlt"></span></th>
+      <th onclick="sortCat('cal','dur')">时长(h)<span id="cal-si-dur"></span></th>
+      <th>质量</th>
+    </tr></thead>
+    <tbody id="cal-body"><tr><td colspan="13"><div class="empty-state"><div class="es-icon">✧</div>设置参数后点击「计算可见定标源」</div></td></tr></tbody>
+    </table></div>
+  </div>
+  <div id="cal-scatter-wrap" style="display:none;margin-top:1rem"><div class="card"><div class="card-title">// 银道坐标全天图（Aitoff 投影）— 可观测 3C 定标源</div><canvas id="cal-scatter" style="width:100%;border-radius:8px;display:block;"></canvas></div></div>
+</div>
+
+<div class="mode-panel" id="panel4">
   <div class="card">
     <div class="card-title">// 球状星团观测参数</div>
     <div class="fg3">
@@ -263,10 +352,11 @@ footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid 
     <tbody id="gc-body"><tr><td colspan="12"><div class="empty-state"><div class="es-icon">⊛</div>请设置参数后点击「计算可见星团」</div></td></tr></tbody>
     </table></div>
   </div>
+
+  <div id="gc-scatter-wrap" style="display:none;margin-top:1rem"><div class="card"><div class="card-title">// 银道坐标全天图（Aitoff 投影）— 可观测球状星团</div><canvas id="gc-scatter" style="width:100%;border-radius:8px;display:block;"></canvas></div></div>
 </div>
 
-<!-- MODE 2 -->
-<div class="mode-panel" id="panel2">
+<div class="mode-panel" id="panel3">
   <div class="card">
     <div class="card-title">// 超新星遗迹观测参数</div>
     <div class="fg3">
@@ -308,45 +398,16 @@ footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid 
     <tbody id="snr-body"><tr><td colspan="13"><div class="empty-state"><div class="es-icon">◎</div>请设置参数后点击「计算可见 SNR」</div></td></tr></tbody>
     </table></div>
   </div>
+
+  <div id="snr-scatter-wrap" style="display:none;margin-top:1rem"><div class="card"><div class="card-title">// 银道坐标全天图（Aitoff 投影）— 可观测超新星遗迹</div><canvas id="snr-scatter" style="width:100%;border-radius:8px;display:block;"></canvas></div></div>
 </div>
 
-<!-- MODE 3 -->
-<div class="mode-panel" id="panel3">
-  <div class="card">
-    <div class="card-title">// 银盘巡天参数</div>
-    <div class="fg4">
-      <div class="field"><label>观测日期（留空=今天）</label><input type="date" id="gp-date"></div>
-      <div class="field"><label>银纬下限 Gb_min (°)</label><input type="number" id="gp-gbmin" value="-15" step="5" min="-90" max="0"></div>
-      <div class="field"><label>银纬上限 Gb_max (°)</label><input type="number" id="gp-gbmax" value="15" step="5" min="0" max="90"></div>
-      <div class="field"><label>分辨率步长 (°)</label><input type="number" id="gp-step" value="0.5" step="0.1" min="0.2" max="2"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="gp-btn" onclick="calcGalaxy()">▶ 生成银盘图</button>
-    </div>
-    <div class="prog-bar" id="gp-prog-bar" style="display:none"><div class="prog-fill" id="gp-prog"></div></div>
-    <div id="gp-status" style="font-family:var(--mono);font-size:.7rem;color:var(--text3);margin-top:.4rem;min-height:1.2em;"></div>
-  </div>
-  <div class="map-section" id="gp-maps" style="display:none">
-    <div class="map-card">
-      <div class="map-header"><span class="map-title">// 中天时间 MAP (BJT)</span><span style="font-family:var(--mono);font-size:.63rem;color:var(--text3);">悬停查看数值</span></div>
-      <div class="map-body"><canvas class="galmap" id="map-time" width="600" height="250"></canvas><div class="map-tooltip" id="tt-time"></div></div>
-      <div class="cbar-wrap"><span class="cbar-label">18:00</span><canvas class="cbar-canvas" id="cbar-time" width="400" height="12"></canvas><span class="cbar-label">08:00+1</span></div>
-      <div class="cbar-ticks" id="cbar-time-ticks"></div>
-    </div>
-    <div class="map-card">
-      <div class="map-header"><span class="map-title">// 中天仰角 MAP (°)</span><span style="font-family:var(--mono);font-size:.63rem;color:var(--text3);">悬停查看数值</span></div>
-      <div class="map-body"><canvas class="galmap" id="map-alt" width="600" height="250"></canvas><div class="map-tooltip" id="tt-alt"></div></div>
-      <div class="cbar-wrap"><span class="cbar-label">0°</span><canvas class="cbar-canvas" id="cbar-alt" width="400" height="12"></canvas><span class="cbar-label">90°</span></div>
-      <div class="cbar-ticks" id="cbar-alt-ticks"></div>
-    </div>
-  </div>
 </div>
 
 <footer>
   <div class="footer-bottom">
-    DART · Daocheng Radio Telescope &nbsp;|&nbsp;
-    星表：Harris 1996 rev.2010（球状星团）· Green 2019（SNR）· 银河坐标转换基于 IAU 1958<br>
-    计算方法：球面天文近似，精度 ±2 min &nbsp;|&nbsp; Observation Planner v2.0
+    DART · Daocheng Radio Telescope &nbsp;|&nbsp; Harris 1996 rev.2010 (GC) · Green 2019 (SNR) · 3C catalog (Perley &amp; Butler 2017)<br>
+    银河坐标转换基于 IAU 1958 &nbsp;|&nbsp; 计算方法：球面天文近似，精度 ±2 min &nbsp;|&nbsp; © M. Yuan
   </div>
 </footer>
 </div>
@@ -354,7 +415,7 @@ footer{display:block !important;padding:1rem 2rem 1.2rem;border-top:0.5px solid 
 <script>
 // ── CONSTANTS ──
 const DART={lon:100.2483,lat:29.03,minAlt:15};
-const BJT=8,OBS_START=18,OBS_END=32,D2R=Math.PI/180;
+const BJT=8,OBS_START=18,OBS_END=32,D2R=Math.PI/180,R2D=180/Math.PI;
 
 // ── STARS ──
 (function(){const c=document.getElementById('stars');for(let i=0;i<120;i++){const s=document.createElement('span'),sz=Math.random()*1.8+0.4;s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--op:${(Math.random()*0.5+0.1).toFixed(2)};--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;c.appendChild(s);}})();
@@ -498,7 +559,7 @@ document.getElementById('f-ra').addEventListener('keydown',e=>{if(e.key==='Enter
 document.getElementById('f-dec').addEventListener('keydown',e=>{if(e.key==='Enter')calcFree();});
 
 // ── CATALOG ──
-const catState={gc:{results:[],sk:'transitAlt',sd:-1},snr:{results:[],sk:'transitAlt',sd:-1}};
+const catState={gc:{results:[],sk:'transitAlt',sd:-1},snr:{results:[],sk:'transitAlt',sd:-1},cal:{results:[],sk:'transitAlt',sd:-1}};
 function altClass(a){return a>=60?'alt-hi':a>=40?'alt-md':'alt-lo';}
 function quality(a){
   if(a>=60)return'<span class="badge b-best">优</span>';
@@ -510,7 +571,7 @@ function calcCatalog(cat){
   const dateStr=document.getElementById(`${cat}-date`).value||getToday();
   const decLim=parseFloat(document.getElementById(`${cat}-declim`).value);
   const{y,m,d}=parseDate(dateStr);
-  const src=cat==='gc'?GC_DATA:SNR_DATA;
+  const src=cat==='gc'?GC_DATA:cat==='snr'?SNR_DATA:CAL_DATA;
   const magLim=cat==='gc'?parseFloat(document.getElementById('gc-maglim').value):999;
   const gbLim=cat==='snr'?parseFloat(document.getElementById('snr-gblim').value):999;
   const cols=cat==='gc'?12:13;
@@ -521,14 +582,15 @@ function calcCatalog(cat){
       if(o.dec<decLim)continue;
       if(cat==='gc'&&o.mag>magLim)continue;
       if(cat==='snr'&&Math.abs(o.gb)>gbLim)continue;
+      const glgb=eqToGal(o.ra,o.dec);
       const w=computeWindow(o.ra,o.dec,y,m,d);
       if(!w)continue;
-      res.push({...o,raStr:raToStr(o.ra),...w});
+      const glgb2=eqToGal(o.ra,o.dec);res.push({...o,raStr:raToStr(o.ra),...w,gl:glgb2.gl,gb:glgb2.gb});
     }
     catState[cat].results=res;
     updateStats(cat);
     document.getElementById(`${cat}-stats`).style.display='grid';
-    renderCatalog(cat);
+    renderCatalog(cat);drawScatter(cat);
   },20);
 }
 function updateStats(cat){
@@ -551,8 +613,8 @@ function renderCatalog(cat){
   if(!rows.length){tb.innerHTML=`<tr><td colspan="${cols}"><div class="empty-state"><div class="es-icon">${cat==='gc'?'⊛':'◎'}</div>无符合条件的目标</div></td></tr>`;return;}
   tb.innerHTML=rows.map(r=>{
     const mg=cat==='gc'?`<td>${r.mag.toFixed(1)}</td>`:'';
-    const ex=cat==='snr'?`<td>${r.gl.toFixed(1)}</td><td>${r.gb.toFixed(1)}</td>`:'';
-    return`<tr><td class="nc">${r.name}</td><td>${r.raStr}</td><td>${decToStr(r.dec)}</td>${mg}${ex}<td>${fmtBJT(r.rise)}</td><td class="${altClass(r.riseAlt)}">${r.riseAlt.toFixed(1)}°</td><td>${fmtBJT(r.transit)}</td><td class="${altClass(r.transitAlt)}">${r.transitAlt.toFixed(1)}°</td><td>${fmtBJT(r.set)}</td><td class="${altClass(r.setAlt)}">${r.setAlt.toFixed(1)}°</td><td>${r.dur.toFixed(1)}</td><td>${quality(r.transitAlt)}</td></tr>`;
+    const ex=cat==='snr'?`<td>${r.gl.toFixed(1)}</td><td>${r.gb.toFixed(1)}</td>`:'';const cx=cat==='cal'?`<td>${r.flux!=null?r.flux.toFixed(0):'—'}</td><td>${r.type||'—'}</td>`:'';
+    return`<tr><td class="nc">${r.name}</td><td>${r.raStr}</td><td>${decToStr(r.dec)}</td>${mg}${ex}${cx}<td>${fmtBJT(r.rise)}</td><td class="${altClass(r.riseAlt)}">${r.riseAlt.toFixed(1)}°</td><td>${fmtBJT(r.transit)}</td><td class="${altClass(r.transitAlt)}">${r.transitAlt.toFixed(1)}°</td><td>${fmtBJT(r.set)}</td><td class="${altClass(r.setAlt)}">${r.setAlt.toFixed(1)}°</td><td>${r.dur.toFixed(1)}</td><td>${quality(r.transitAlt)}</td></tr>`;
   }).join('');
 }
 function exportCSV(cat){
@@ -596,12 +658,11 @@ function calcGalaxy(){
   for(let gb=gbMin;gb<=gbMax+step*0.01;gb+=step)gbArr.push(parseFloat(gb.toFixed(4)));
   const NGL=glArr.length,NGB=gbArr.length,total=NGL*NGB;
   const tMap=new Float32Array(NGL*NGB).fill(NaN),aMap=new Float32Array(NGL*NGB).fill(NaN);
-  let done=0;
-  const CHUNK=Math.max(300,Math.min(1000,Math.floor(30000/NGL)));
+  let done=0;const CHUNK=Math.max(300,Math.min(1000,Math.floor(30000/NGL)));
   function chunk(start){
     const end=Math.min(start+CHUNK,total);
-    for(let idx=start;idx<end;idx++){
-      const gi=idx%NGL,bi=Math.floor(idx/NGL);
+    for(let i=start;i<end;i++){
+      const gi=i%NGL,bi=Math.floor(i/NGL);
       const{ra,dec}=galToEq(glArr[gi],gbArr[bi]);
       let maxA=-Infinity,maxT=NaN;
       for(let bh=0;bh<24;bh+=0.1){const a=getAlt(ra,dec,bh,y,m,d);if(a>maxA){maxA=a;maxT=bh;}}
@@ -610,8 +671,8 @@ function calcGalaxy(){
     }
     const pct=done/total*100;
     document.getElementById('gp-prog').style.width=pct.toFixed(0)+'%';
-    document.getElementById('gp-status').textContent=`计算中 ${done}/${total} 格点 (${pct.toFixed(0)}%)`;
-    if(end<total){requestAnimationFrame(()=>chunk(end));}
+    document.getElementById('gp-status').textContent=`计算中 ${done}/${total} (${pct.toFixed(0)}%)`;
+    if(end<total)requestAnimationFrame(()=>chunk(end));
     else{
       gpData={tMap,aMap,glArr,gbArr,NGL,NGB};
       drawMaps();btn.disabled=false;btn.textContent='▶ 生成银盘图';
@@ -795,6 +856,250 @@ const SNR_DATA=[
 {name:'G357.7-00.1',ra:265.747,dec:-30.892,gl:357.7,gb:-0.1},{name:'G357.7+00.3',ra:265.497,dec:-30.548,gl:357.7,gb:0.3},
 {name:'G359.0-00.9',ra:267.210,dec:-30.101,gl:359.0,gb:-0.9},{name:'G359.1-00.5',ra:266.900,dec:-29.800,gl:359.1,gb:-0.5},
 ];
+
+// ── EQ → GALACTIC ──────────────────────────────────────────────────
+function eqToGal(ra,dec){
+  const a=ra*D2R,d=dec*D2R;
+  const sB=Math.sin(d)*Math.sin(GP_DEC)+Math.cos(d)*Math.cos(GP_DEC)*Math.cos(a-GP_RA);
+  const gb=Math.asin(Math.max(-1,Math.min(1,sB)));
+  const cL=Math.cos(d)*Math.sin(a-GP_RA)/Math.cos(gb);
+  const sL=(Math.cos(d)*Math.sin(GP_DEC)*Math.cos(a-GP_RA)-Math.sin(d)*Math.cos(GP_DEC))/Math.cos(gb);
+  let gl=GP_L-Math.atan2(cL,sL);
+  return{gl:((gl*R2D)%360+360)%360, gb:gb*R2D};
+}
+
+// ── AITOFF PROJECTION SCATTER ───────────────────────────────────────
+function aitoff(l,b){
+  // Hammer-Aitoff projection: l=0 (galactic center) at map center
+  // l: 0-360 deg → remap to [-180,180]
+  const lc = l > 180 ? l - 360 : l;
+  const lRad = lc * D2R, bRad = b * D2R;
+  const z = Math.sqrt(1 + Math.cos(bRad) * Math.cos(lRad / 2));
+  if (z < 1e-10) return {x: 0, y: 0};
+  const x = 2 * Math.SQRT2 * Math.cos(bRad) * Math.sin(lRad / 2) / z;
+  const y = Math.SQRT2 * Math.sin(bRad) / z;
+  return {x, y};
+}
+
+function drawScatter(cat){
+  const data=catState[cat].results;
+  const wrap=document.getElementById(`${cat}-scatter-wrap`);
+  const canvas=document.getElementById(`${cat}-scatter`);
+  if(!wrap||!canvas)return;
+  if(!data.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  // Size canvas
+  const W=canvas.parentElement.clientWidth||800;
+  const H=Math.round(W*0.5);
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#07090f';ctx.fillRect(0,0,W,H);
+
+  const CX=W/2,CY=H/2,RX=W*0.46,RY=H*0.44;
+
+  // Draw Aitoff ellipse boundary
+  ctx.beginPath();
+  for(let i=0;i<=360;i++){
+    const ang=i*D2R;
+    const x=CX+RX*Math.cos(ang),y=CY+RY*Math.sin(ang);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.strokeStyle='rgba(96,165,250,0.25)';ctx.lineWidth=1;ctx.stroke();
+  // Clip to ellipse
+  ctx.save();ctx.beginPath();
+  for(let i=0;i<=360;i++){const ang=i*D2R;const x=CX+RX*Math.cos(ang),y=CY+RY*Math.sin(ang);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+  ctx.closePath();ctx.clip();
+
+  // Grid: b lines at -60,-30,0,30,60
+  [-60,-30,0,30,60].forEach(bDeg=>{
+    ctx.beginPath();let first=true;
+    for(let lDeg=0;lDeg<=360;lDeg+=2){
+      const{x,y}=aitoff(lDeg,bDeg);
+      const px=CX+x*RX/(2*Math.SQRT2),py=CY-y*RY/Math.SQRT2;
+      first?(ctx.moveTo(px,py),first=false):ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle=bDeg===0?'rgba(96,165,250,0.35)':'rgba(148,163,184,0.12)';
+    ctx.lineWidth=bDeg===0?0.8:0.5;ctx.setLineDash(bDeg===0?[]:[4,4]);ctx.stroke();
+    ctx.setLineDash([]);
+    // b label
+    const{x:lx,y:ly}=aitoff(180,bDeg);
+    ctx.fillStyle='rgba(148,163,184,0.5)';ctx.font='10px "JetBrains Mono",monospace';
+    ctx.textAlign='left';ctx.fillText(bDeg+'°',CX+lx*RX/(2*Math.SQRT2)+3,CY-ly*RY/Math.SQRT2+3);
+  });
+
+  // Grid: l lines at 0,60,120,180,240,300,360(=0)
+  [0,60,120,180,240,300].forEach(lDeg=>{
+    ctx.beginPath();let first=true;
+    for(let bDeg=-90;bDeg<=90;bDeg+=2){
+      const{x,y}=aitoff(lDeg,bDeg);
+      const px=CX+x*RX/(2*Math.SQRT2),py=CY-y*RY/Math.SQRT2;
+      first?(ctx.moveTo(px,py),first=false):ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle='rgba(148,163,184,0.1)';ctx.lineWidth=0.5;ctx.stroke();
+    // l label on equator
+    const{x:lx,y:ly}=aitoff(lDeg,0);
+    ctx.fillStyle='rgba(148,163,184,0.55)';ctx.font='10px "JetBrains Mono",monospace';
+    ctx.textAlign='center';ctx.fillText(lDeg+'°',CX+lx*RX/(2*Math.SQRT2),CY-ly*RY/Math.SQRT2+14);
+  });
+  ctx.restore();
+
+  // Color map: alt 15→90 → viridis-like
+  function altColor(a){
+    const t=Math.max(0,Math.min(1,(a-15)/75));
+    function li(t,a,b,c){return t<0.5?a+(b-a)*t*2:b+(c-b)*(t-0.5)*2;}
+    const r=Math.round(li(t,68,50,253)),g=Math.round(li(t,1,180,231)),bb=Math.round(li(t,180,80,37));
+    return{r,g,b:bb,s:`rgba(${r},${g},${bb},0.9)`};
+  }
+
+  // Plot points (clip manually to ellipse)
+  const pts=[];
+  data.forEach(r=>{
+    const{x,y}=aitoff(r.gl,r.gb);
+    const px=CX+x*RX/(2*Math.SQRT2), py=CY-y*RY/Math.SQRT2;
+    // Check inside ellipse
+    if(((px-CX)/RX)**2+((py-CY)/RY)**2>1)return;
+    const rad=cat==='cal'?(r.flux?(()=>{
+      const t=(Math.log(r.flux)-Math.log(15))/(Math.log(10000)-Math.log(15));
+      return 4+(12-4)*Math.max(0,Math.min(1,t));
+    })():5):5;
+    const col=altColor(r.transitAlt);
+    ctx.beginPath();ctx.arc(px,py,rad,0,Math.PI*2);
+    ctx.fillStyle=col.s;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=0.6;ctx.stroke();
+    pts.push({px,py,rad:rad+4,name:r.name,alt:r.transitAlt,transit:r.transit,gl:r.gl,gb:r.gb});
+  });
+
+  // Colorbar
+  ctx.save();
+  const cbX=10,cbY=H-22,cbW=150,cbH=8;
+  for(let i=0;i<cbW;i++){const c=altColor(15+75*i/cbW);ctx.fillStyle=c.s;ctx.fillRect(cbX+i,cbY,1,cbH);}
+  ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=0.5;ctx.strokeRect(cbX,cbY,cbW,cbH);
+  ctx.fillStyle='rgba(148,163,184,0.7)';ctx.font='9px "JetBrains Mono",monospace';
+  ctx.textAlign='left';ctx.fillText('15°',cbX,cbY+cbH+9);
+  ctx.textAlign='right';ctx.fillText('90°',cbX+cbW,cbY+cbH+9);
+  ctx.textAlign='center';ctx.fillText('中天仰角',cbX+cbW/2,cbY+cbH+9);
+  ctx.restore();
+
+  // Size legend for 3C calibrators — bottom-right, symmetric with colorbar
+  if(cat==='cal'){
+    // Legend examples: 20, 200, 10000 Jy (representative of phase/struct/SNR cals)
+    const legExamples=[
+      {flux:20,   label:'20'},
+      {flux:200,  label:'200'},
+      {flux:1350, label:'1k+'},
+    ];
+    // Compute radii using same log formula
+    function calRad(f){const t=(Math.log(f)-Math.log(15))/(Math.log(10000)-Math.log(15));return 4+(12-4)*Math.max(0,Math.min(1,t));}
+    // Total width of legend
+    let totalW=0;
+    legExamples.forEach(e=>{totalW+=calRad(e.flux)*2+20;});
+    totalW+=10;
+    // Position: bottom-right, symmetric with colorbar (colorbar is at left: cbX, cbY)
+    const lgRightX=W-16;  // right edge
+    const lgY=H-22;       // same baseline as colorbar
+    // Label "Flux (Jy)" above
+    ctx.save();
+    // "Flux (Jy)" label at top-center of the legend area
+    // Compute total legend width first to center the label
+    let totalLegW=0;
+    [...legExamples].forEach(e=>{totalLegW+=calRad(e.flux)*2+10;});
+    const lgCenterX=lgRightX-totalLegW/2;
+    ctx.fillStyle='rgba(148,163,184,0.65)';
+    ctx.font='9px "JetBrains Mono",monospace';
+    ctx.textAlign='center';
+    ctx.fillText('Flux (Jy)', lgCenterX, lgY-2);
+    // Draw circles right-to-left (largest first on the right)
+    let cx=lgRightX;
+    [...legExamples].reverse().forEach(e=>{
+      const r=calRad(e.flux);
+      cx-=r;
+      // Draw circle
+      ctx.beginPath();ctx.arc(cx,lgY+8,r,0,Math.PI*2);
+      ctx.fillStyle='rgba(96,165,250,0.18)';ctx.fill();
+      ctx.strokeStyle='rgba(148,163,184,0.5)';ctx.lineWidth=0.7;ctx.stroke();
+      // Label centered inside circle
+      const fontSize=Math.max(6,Math.min(9,r*1.1));
+      ctx.fillStyle='rgba(200,220,255,0.9)';
+      ctx.font=`${fontSize}px "JetBrains Mono",monospace`;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(e.label, cx, lgY+8);
+      ctx.textBaseline='alphabetic';
+      cx-=r+10;
+    });
+    ctx.restore();
+  }
+
+  // Tooltip
+  // remove old tooltip if exists
+  const oldTip=canvas.parentElement.querySelector('.scatter-tip');
+  if(oldTip)oldTip.remove();
+  const tip=document.createElement('div');
+  tip.className='scatter-tip';
+  tip.style.cssText='position:absolute;background:rgba(7,9,15,0.95);border:0.5px solid rgba(96,165,250,0.35);border-radius:8px;padding:7px 11px;font-family:"JetBrains Mono",monospace;font-size:.72rem;color:#e2e8f0;pointer-events:none;display:none;white-space:nowrap;z-index:20;';
+  canvas.parentElement.style.position='relative';
+  canvas.parentElement.appendChild(tip);
+  canvas.onmousemove=function(e){
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*W/rect.width;
+    const my=(e.clientY-rect.top)*H/rect.height;
+    let found=null;
+    for(const p of pts){if(Math.hypot(mx-p.px,my-p.py)<=p.rad){found=p;break;}}
+    if(found){
+      tip.innerHTML=`<b>${found.name}</b><br>l=${found.gl.toFixed(1)}° b=${found.gb.toFixed(1)}°<br>中天 ${fmtBJT(found.transit)} BJT &nbsp; 仰角 ${found.alt.toFixed(1)}°`;
+      tip.style.display='block';
+      const lx=e.clientX-rect.left+14,ly=e.clientY-rect.top-10;
+      tip.style.left=(lx+200>rect.width?lx-215:lx)+'px';
+      tip.style.top=(ly<0?4:ly)+'px';
+    }else tip.style.display='none';
+  };
+  canvas.onmouseleave=()=>{tip.style.display='none';};
+}
+
+// ── computeWindow24 for free target ─────────────────────────────────
+function computeWindow24(ra,dec,y,m,d){
+  const STEP=0.05;
+  let maxA=-999,maxT=null,riseT=null,setT=null,rA=null,sA=null,inW=false,belowCount=0;
+  for(let bh=0;bh<24;bh+=STEP){
+    const a=getAlt(ra,dec,bh,y,m,d);
+    if(a<DART.minAlt)belowCount++;
+    if(a>=DART.minAlt){if(!inW){riseT=bh;rA=a;inW=true;}if(a>maxA){maxA=a;maxT=bh;}setT=bh;sA=a;}
+    else inW=false;
+  }
+  if(maxA<DART.minAlt)return null;
+  if(belowCount===0)return{rise:null,riseAlt:null,transit:maxT,transitAlt:maxA,set:null,setAlt:null,dur:24,alwaysVis:true};
+  if(riseT!==null&&getAlt(ra,dec,23.95,y,m,d)>=DART.minAlt){
+    for(let bh=24;bh<48;bh+=STEP){const a=getAlt(ra,dec,bh,y,m,d);if(a>=DART.minAlt){if(a>maxA){maxA=a;maxT=bh%24;}setT=bh;sA=a;}else break;}
+  }
+  return{rise:riseT,riseAlt:rA,transit:maxT%24,transitAlt:maxA,set:setT%24,setAlt:sA,dur:Math.min(setT-riseT,24),alwaysVis:false};
+}
+
+// ── 3C CALIBRATOR DATA ───────────────────────────────────────────────
+const CAL_DATA=[
+  {name:'3C 48',  ra:24.422,  dec:33.159,  flux:64,  type:'Flux'},
+  {name:'3C 147', ra:85.651,  dec:49.852,  flux:83,  type:'Flux'},
+  {name:'3C 196', ra:123.400, dec:48.217,  flux:83,  type:'Flux'},
+  {name:'3C 286', ra:202.785, dec:30.509,  flux:27,  type:'Flux'},
+  {name:'3C 295', ra:212.836, dec:52.203,  flux:97,  type:'Flux'},
+  {name:'3C 380', ra:277.382, dec:48.746,  flux:65,  type:'Flux'},
+  {name:'3C 84',  ra:49.951,  dec:41.512,  flux:90,  type:'Phase'},
+  {name:'3C 123', ra:69.269,  dec:29.671,  flux:210, type:'Struct'},
+  {name:'3C 218 (Hydra A)', ra:139.524,dec:-12.096,flux:280,type:'Struct'},
+  {name:'3C 274 (Virgo A)', ra:187.706,dec:12.391, flux:1350,type:'Struct'},
+  {name:'3C 353', ra:260.117, dec:-1.536,  flux:430, type:'Struct'},
+  {name:'3C 10 (Cas A)',  ra:350.858,dec:58.812,flux:10000,type:'SNR'},
+  {name:'3C 144 (Crab)', ra:83.633, dec:22.015,flux:1340, type:'SNR'},
+  {name:'3C 157 (IC443)',ra:94.211, dec:22.531,flux:160,  type:'SNR'},
+  {name:'3C 33',  ra:16.965,  dec:13.329,  flux:60,  type:'Phase'},
+  {name:'3C 138', ra:80.291,  dec:16.640,  flux:15,  type:'Phase'},
+  {name:'3C 161', ra:96.796,  dec:-5.876,  flux:70,  type:'Phase'},
+  {name:'3C 227', ra:148.209, dec:7.623,   flux:20,  type:'Phase'},
+  {name:'3C 345', ra:250.745, dec:39.810,  flux:15,  type:'Phase'},
+  {name:'3C 454.3',ra:343.491,dec:16.148,  flux:20,  type:'Phase'},
+  {name:'3C 461 (Cas A)',ra:350.858,dec:58.812,flux:10000,type:'SNR'},
+];
+
 </script>
 </body>
 </html>
